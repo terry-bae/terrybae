@@ -34,7 +34,7 @@ void board_main(char *id);
 int main()
 {	
 	struct member info[100]; // 100명 가입 선언
-	//load_mdata(info);
+	load_mdata(info);
 	while(1)  ///프로그램 실행중에 안꺼지게 설정
 	{
 		//	struct member info[100];  //100명 가입 선언
@@ -85,23 +85,19 @@ int main()
 
 void load_mdata(struct member *info)  // 저장된 회원정보 로드
 {
-	int i,j;
-	FILE *fp=fopen("member_info.txt", "rt");
-	if(fp==NULL)
+	int i;
+	FILE *fps;
+	fps=fopen("member_info.txt", "rt");
+	if(fps==NULL)
 	{
 		printf("파일 여는데 실패했습니다");	
 	}
-	while(1)
+	for(i=0; i<minfo; i++)
 	{
-		j=fscanf(fp,"계정 : %s, 비밀번호: %s, 이름: %s, 나이: %s", \
+		fscanf(fps, "%s %s %s %s", \
 				info[i].id, info[i].passwd, info[i].name, info[i].age);
-		if(j==EOF)
-		{
-			break;
-		}
-		minfo++;
 	}
-	fclose(fp);
+	fclose(fps);
 }
 		/*
 		   }
@@ -133,7 +129,7 @@ void load_mdata(struct member *info)  // 저장된 회원정보 로드
 
 void signup(struct member *info) //회원가입
 {
-	int i,j,k;
+	int i,j;
 	for(i=minfo; i<100; i++) //main함수에 따른 100명 연속 가입가능 반복문 선언
 		//i=pinfo 선언해줘야 i=0이 안되면서 회원등록 한 사람이 쌓임
 	{
@@ -160,17 +156,20 @@ void signup(struct member *info) //회원가입
 }
 
 
-void save_mdata(struct member *info)  ////회원정보 파일 세이브
+void save_mdata(struct member *info )  ////회원정보 파일 세이브
 {
 	int i;
-	FILE *fp=fopen("member_info.txt", "at");
+	FILE *fp;
+	fp=fopen("member_info.txt", "at");
 	if(fp==NULL)
 	{
 		printf("파일을 여는데 실패했습니다");
 	}
+	
+	fprintf(fp, "전체 회원수 : %d \n", minfo);
 	for(i=0; i<minfo; i++)
 	{
-		fprintf(fp, "계정: %s, 비밀번호 : %s, 이름 :%s, 나이 : %s" \
+		fprintf(fp, "%s %s %s %s" \
 				,info[i].id, info[i].passwd, info[i].name, info[i].age);
 		fputc('\n', fp);
 	}
