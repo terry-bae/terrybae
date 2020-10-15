@@ -1,44 +1,49 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-int minfo; //회원정보
-int binfo; //보드정보
-struct member   ////회원가입 양식 구조체
+int minfo; //회원정보수
+int binfo; //보드정보수
+typedef struct member   ////회원가입 양식 구조체
 {
 	char id[20];
 	char passwd[20];
 	char name[20];
 	char age[20];
-};
+} Member;
 
-struct board     ////게시판 글쓰기 양식 아직 미구현 상태
+typedef struct board     ////게시판 글쓰기 양식 아직 미구현 상태
 {
-	char id[30];
+	char ID[30];
 	char title[30];
-	char num[30];
+	char tnum[30];
 	char content[500];
-};
+} Board;
 
-void signup(struct member *info);  //회원가입 함수 선언
-void login(struct member *info); // 로그인 함수 선언
-void list(struct member *info);  //회원목록 함수 선언
-void modify(struct member *info); // 회원정보 수정 함수 선언
-void withdraw(struct member *info); //회원탈퇴 함수 선언
-void load_mdata(struct member *info); //회원정보 파일 로드 함수 선언
-void save_mdata(struct member *info); //회원정보 파일 세이브 함수 선언
-
-void board_main(char *id);
+int search_mdata(Member *info, char *str, int minfo); //회원정보 찾기
+int search_login(Member *info, char *ID, char *Passwd, int minfo);
+void signup(Member *info, int *minfo);  //회원가입 함수 선언 
+void login(Member *info, int *minfo); // 로그인 함수 선언
+void list(Member *info, int minfo);  //회원목록 함수 선언
+void modify(Member *info, int *minfo); // 회원정보 수정 함수 선언
+//void withdraw(Member *info, int *minfo); //회원탈퇴 함수 선언
+void load_mdata(Member *info, int *minfo); //회원정보 파일 로드 함수 선언
+void save_mdata(Member *info, int minfo); //회원정보 파일 세이브 함수 선언
+void board_main(char *ID);
 
 
 int main()
 {	
-	struct member info[100]; // 100명 가입 선언
-	load_mdata(info);
+	Member info[100]; // 100명 가입 선언
+	int m_number=0;
+	load_mdata(info, &m_number);
+	int i;
+	i=0;
 	while(1)  ///프로그램 실행중에 안꺼지게 설정
 	{
 		//	struct member info[100];  //100명 가입 선언
-		int i;
+
 		printf("1. 회원가입 \n");
 		printf("2. 로그인 \n");
 		printf("3. 회원정보 수정 \n");
@@ -52,30 +57,31 @@ int main()
 
 		if(i==1)
 		{
-			signup(info);
-			i=0;
+			signup(info, &m_number);
+	//		save_mdata(info, &m_number);	
 		}
 		if(i==2)
 		{
-			login(info);
-
+			login(info, &m_number);
 		}
 		if(i==3)
 		{
-			modify(info);
+			modify(info, &m_number);	
+		//	save_mdata(info, &m_number);
 		}
 		if(i==4)
 		{
-			list(info);
+			list(info, m_number);
 		}
 		/*		if(i==5)
 				{
-				withdraw(info);
+				withdraw(info, &m_number);
+				save_mdata(info, &m_number);
 				}	*/
 		if(i==6)
 		{
 			printf(" 게시판 프로그램을 종료합니다 \n");
-			save_mdata(info);
+			//save_mdata(info, &m_number);
 			break ;
 		}
 	}
@@ -83,19 +89,24 @@ int main()
 }
 
 
-void load_mdata(struct member *info)  // 저장된 회원정보 로드
+void load_mdata(Member *info, int *minfo)  // 저장된 회원정보 로드
 {
-	int i;
+	int ret;
 	FILE *fps;
 	fps=fopen("member_info.txt", "rt");
 	if(fps==NULL)
 	{
-		printf("파일 여는데 실패했습니다");	
+		printf("파일 로드를  실패했습니다");	
 	}
-	for(i=0; i<minfo; i++)
+	while(1)
 	{
-		fscanf(fps, "%s %s %s %s", \
-				info[i].id, info[i].passwd, info[i].name, info[i].age);
+		ret=fscanf(fps, "%s %s %s %s", info[*minfo].id, info[*minfo].passwd, info[*minfo].name, info[*minfo].age);
+		
+		if(ret==EOF)
+		{
+			break;
+		}
+		(*minfo)++;
 	}
 	fclose(fps);
 }
@@ -127,50 +138,73 @@ void load_mdata(struct member *info)  // 저장된 회원정보 로드
 //}
 
 
-void signup(struct member *info) //회원가입
+void signup(Member *info, int *minfo) //회원가입
 {
-	int i,j;
-	for(i=minfo; i<100; i++) //main함수에 따른 100명 연속 가입가능 반복문 선언
+	int i;
+	char str_id[20];
+	char str_passwd[20];
+	char str_name[20];
+	char str_age[20];
+	//for(i=minfo; i<100; i++) //main함수에 따른 100명 연속 가입가능 반복문 선언
 		//i=pinfo 선언해줘야 i=0이 안되면서 회원등록 한 사람이 쌓임
-	{
+	
 		printf("회원가입을 계속 하시겠습니다? 1. 예 2. 아니요 ");
-		scanf("%d", &j);
+		scanf("%d", &i);
 
-		if(j==1)
-		{
+		if(i==1)
+		{	
 			printf("아이디 : ");
-			scanf("%s", info[i].id);
+			scanf("%s", str_id);
+			getchar();
+			if(search_mdata(info, str_id, *minfo)==1)
+			{
+				printf("동일한 ID가 있습니다 \n");
+			}
+			else
+			{
+			printf("가입가능한 ID입니다. 나머지 정보를 입력해주세요 \n");
 			printf("패스워드 : ");
-			scanf("%s", info[i].passwd);
+			scanf("%s", str_passwd);
 			printf("이름 : ");
-			scanf("%s", info[i].name);
+			scanf("%s", str_name);
 			printf("나이 :");
-			scanf("%s", info[i].age);
+			scanf("%s", str_age);
+			strcpy(info[*minfo].id, str_id);
+			strcpy(info[*minfo].passwd, str_passwd);
+			strcpy(info[*minfo].name, str_name);
+			strcpy(info[*minfo].age, str_age);
+			(*minfo)++; //가입된 회원 수 추가
 			printf("회원가입이 완료되었습니다. \n");
-			minfo ++; //가입된 사람 정보 추가
 		}
-		if(j==2)
+		}
+		if(i==2)
+		{
 			printf("====메인화면으로 돌아가겠습니다.==== \n");
-		break ;
-	}
+			main();
+		}
+		else
+		{
+			printf("====메인화면으로 돌아가겠습니다. ==== \n");
+			main();
+		}
+	
 }
 
 
-void save_mdata(struct member *info )  ////회원정보 파일 세이브
+void save_mdata(Member *info, int minfo)  ////회원정보 파일 세이브
 {
 	int i;
 	FILE *fp;
-	fp=fopen("member_info.txt", "at");
+	fp=fopen("member_info.txt", "wt");
 	if(fp==NULL)
 	{
 		printf("파일을 여는데 실패했습니다");
 	}
 	
-	fprintf(fp, "전체 회원수 : %d \n", minfo);
+	//fprintf(fp, "전체 회원수 : %d \n", minfo);
 	for(i=0; i<minfo; i++)
 	{
-		fprintf(fp, "%s %s %s %s" \
-				,info[i].id, info[i].passwd, info[i].name, info[i].age);
+		fprintf(fp, "%s %s %s %s" ,info[i].id, info[i].passwd, info[i].name, info[i].age);
 		fputc('\n', fp);
 	}
 	fflush(fp);
@@ -223,17 +257,31 @@ void save_mdata(struct member *info )  ////회원정보 파일 세이브
 //}
 
 
-void login(struct member *info)                     
+void login(Member *info, int *minfo)                     
 {	
-	char id[20]; //아이디
-	char passwd[20]; //비밀번호
+	char str_id[20]; //아이디
+	char str_passwd[20]; //비밀번호
 	int i;
 	printf("====로그인 화면입니다.====\n");
-	printf(" 아이디를 입력하세요: ");
-	scanf("%s", id);
-	printf(" 비밀번호를 입력하세요: ");
-	scanf("%s", passwd);
-	for(i=0; i<minfo; i++) 
+	while(1)
+	{
+		printf(" 아이디를 입력하세요: ");
+		scanf("%s", str_id);
+		printf(" 비밀번호를 입력하세요: ");
+		scanf("%s", str_passwd);
+		if(search_login(info, str_id, str_passwd, *minfo)==1)
+		{
+			break;
+		}
+		else
+		{
+			printf(" 로그인을 실패했습니다.\n");
+			printf(" 계정정보를 다시 입력하십시오.\n");
+		}
+	}
+	printf("==== 로그인이 성공했습니다. ====\n");
+}
+	/*for(i=0; i<*minfo; i++) 
 	{
 		if(strcmp(id,info[i].id)==0 && strcmp(passwd,info[i].passwd)==0)
 
@@ -246,33 +294,36 @@ void login(struct member *info)
 			printf("\n\n");
 		}
 	}
-	printf("===로그인이 성공했습니다.===\n");
-	board_main(id);
+	
+	
+	printf("===로그인이 성공했습니다.===\n");/
+	board_main(str_id);
 }
+*/
 
-void list(struct member *info)  ////사용자 목록 조회
+void list(Member *info, int minfo)  ////사용자 목록 조회
 {
 	int i;
 	printf("사용자 목록을 조회하겠습니다. \n");
-
+	printf("아이디	비밀번호	이름	나이\n");
 	for(i=0; i<minfo; i++) 
 	{
-		printf("계정 : %s, 이름 : %s, 나이 : %s \n", info[i].id, info[i].name, info[i].age);
+		printf("%s %s %s  %s \n", info[i].id, info[i].passwd, info[i].name, info[i].age);
 	}
 }
 
-void modify(struct member *info)
+void modify(Member *info, int *minfo)
 {
-	char a[20]; //수정할 아이디 변수
+	char m_id[20]; //수정할 아이디 변수
 	int i;
 	printf(" 수정하실 회원 아이디를 입력하시오:");
-	scanf("%s", a);
+	scanf("%s", m_id);
 	printf("***해당 하는 계정 유무가 확인하겠습니다.");
 	printf("\n");
 	printf("\n");
-	for(i=0; i<minfo; i++)  /////////////////cnt대체
+	for(i=0; i<*minfo; i++)  
 	{
-		if(strcmp(a,info[i].id)==0)
+		if(strcmp(m_id,info[i].id)==0)
 		{
 			while(1)
 			{   
@@ -323,7 +374,39 @@ void modify(struct member *info)
    }
    printf("회원님의 정보가 삭제되었습니다. \n");
    }*/
+int search_mdata(Member *info, char *str, int minfo)
+{
+	char find_id[30];
+	int i;
+	strcpy(find_id, str);
+	for(i=0; i<minfo; i++)
+	{
+		if(strcmp(info[i].id, find_id)==0)
+		{
+			return 1;
+		}
+	}
+}
+int search_login(Member *info, char *ID, char *Passwd, int minfo)
+{
+	char ID_tmp[30];
+	char Passwd_tmp[30];
+	int i;
+	strcpy(ID_tmp,ID);
+	strcpy(Passwd_tmp,Passwd);
+	for(i=0; i<minfo; i++)
+	{
+		if(strcmp(info[i].id,ID_tmp)==0 && strcmp(info[i].passwd,Passwd_tmp)==0)
+		{
+			return 1;
+		}
+	}
+}
 
+/*int search_mdata(Member *info, char *str int minfo)
+{
+	char
+		*/
 void board_main(char *id)
 {
 	struct board binfo[100]; //100개 게시물  작성 가능 선언
@@ -368,5 +451,4 @@ void board_main(char *id)
 		//		default;
 		//			printf("다시 입력해주세요\n");
 	}
-	}
-
+}
