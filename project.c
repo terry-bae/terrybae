@@ -1,7 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 
 int minfo; //회원정보수
 int binfo; //보드정보수
@@ -21,6 +20,7 @@ typedef struct board     ////게시판 양식 구조체
 	char content[1000];
 } Board;
 
+//int search_cdata(Member *info, char *ID, char *id, int minfo);
 int search_mdata(Member *info, char *str, int minfo); //회원정보 찾기
 int search_login(Member *info, char *ID, char *Passwd, int minfo);
 void signup(Member *info, int *minfo);  //회원가입 함수 선언 
@@ -79,7 +79,7 @@ int main()
 		if(n==3)
 		{
 			modify(info, &m_number);	
-			//	save_mdata(info, m_number);
+			//save_mdata(info, m_number);
 		}
 		if(n==4)
 		{
@@ -103,13 +103,34 @@ int main()
 /*저장된 회원정보 로드 함수*/
 void load_mdata(Member *info, int *minfo)
 {
-	int ret;
+	//int ret;
+	char Size[2000];
 	FILE *fps;
 	fps=fopen("member_info.txt", "rt");
 	if(fps==NULL)
 	{
 		printf("파일 로드를  실패했습니다");	
 	}
+
+	while (fgets(Size, sizeof(Size), fps) != NULL)
+	{
+		char *ptr1 = strtok(Size, "$");
+
+		strcpy(info[*minfo].id, ptr1);
+		ptr1 = strtok(NULL, "$");
+		strcpy(info[*minfo].passwd, ptr1);
+		ptr1 = strtok(NULL, "$");
+		strcpy(info[*minfo].name, ptr1);
+		ptr1 = strtok(NULL, "$");
+		strcpy(info[*minfo].age, ptr1);
+
+		(*minfo)++;
+	}
+	fclose(fps);
+}
+
+
+	/*
 	while(1)
 	{
 		ret=fscanf(fps, "%s %s %s %s", info[*minfo].id, info[*minfo].passwd, info[*minfo].name, info[*minfo].age);
@@ -122,6 +143,7 @@ void load_mdata(Member *info, int *minfo)
 	}
 	fclose(fps);
 }
+*/
 /*
    }
    fscanf(fp, "%*[^:]:%d", &minfo);
@@ -146,44 +168,58 @@ void signup(Member *info, int *minfo)
 
 	printf("회원가입을 계속 하시겠습니다? 1. 예 2. 아니요 ");
 	scanf("%d", &n);
-
-	if(n==1)
-	{	
-		printf("아이디 : ");
-		scanf("%s", sign_id);
-		if(search_mdata(info, sign_id, *minfo)==1)
-			//if(strcmp(sign_id, info[*minfo].id)==0)
+	getchar();
+	while(1)
+	{
+		if(n==1)
+		{	
+			printf("아이디 : ");
+			fgets(sign_id, 20, stdin);
+			sign_id[strlen(sign_id)-1]=0;
+			//scanf("%s", sign_id);
+			if(search_mdata(info, sign_id, *minfo)==1)
+				//if(strcmp(sign_id, info[*minfo].id)==0)
+			{
+				printf("동일한 ID가 있습니다. \n");
+				printf("가입할 ID를 다시 입력해주십시오. \n");
+			}
+			else
+			{
+				printf("가입가능한 ID입니다. 나머지 정보를 입력해주세요 \n");
+				printf("패스워드 : ");
+				fgets(sign_passwd, 20, stdin);
+				sign_passwd[strlen(sign_passwd)-1]=0;
+				//scanf("%s", sign_passwd);
+				printf("이름 : ");
+				fgets(sign_name, 20, stdin);
+				sign_name[strlen(sign_name)-1]=0;
+				//scanf("%s", sign_name);
+				printf("나이 :");
+				fgets(sign_age, 20, stdin);
+				sign_age[strlen(sign_age)-1]=0;
+				//scanf("%s", sign_age);
+				strcpy(info[*minfo].id, sign_id);
+				strcpy(info[*minfo].passwd, sign_passwd);
+				strcpy(info[*minfo].name, sign_name);
+				strcpy(info[*minfo].age, sign_age);
+				(*minfo)++; //가입된 회원 수 추가
+				printf("회원가입이 완료되었습니다. \n");
+				break;
+			}
+		}
+		else if(n==2)
 		{
-			printf("동일한 ID가 있습니다 \n");
+			printf("====메인화면으로 돌아가겠습니다.==== \n");
+			break;
 		}
 		else
 		{
-			printf("가입가능한 ID입니다. 나머지 정보를 입력해주세요 \n");
-			printf("패스워드 : ");
-			scanf("%s", sign_passwd);
-			printf("이름 : ");
-			scanf("%s", sign_name);
-			printf("나이 :");
-			scanf("%s", sign_age);
-			strcpy(info[*minfo].id, sign_id);
-			strcpy(info[*minfo].passwd, sign_passwd);
-			strcpy(info[*minfo].name, sign_name);
-			strcpy(info[*minfo].age, sign_age);
-			(*minfo)++; //가입된 회원 수 추가
-			printf("회원가입이 완료되었습니다. \n");
+			printf("==== 잘못된 입력값입니다. ==== \n");
+			printf("==== 메인화면으로 돌아가겠습니다. ==== \n");
+			break;
 		}
 	}
-	else if(n==2)
-	{
-		printf("====메인화면으로 돌아가겠습니다.==== \n");
-		main();
-	}
-	else
-	{
-		printf("====메인화면으로 돌아가겠습니다. ==== \n");
-		main();
-	}
-
+	return;
 }
 
 /*회원정보 파일 저장 함수*/
@@ -200,8 +236,8 @@ void save_mdata(Member *info, int minfo)
 	//fprintf(fp, "전체 회원수 : %d \n", minfo);
 	for(i=0; i<minfo; i++)
 	{
-		fprintf(fp, "%s %s %s %s" ,info[i].id, info[i].passwd, info[i].name, info[i].age);
-		fputc('\n', fp);
+		fprintf(fp, "%s$%s$%s$%s\n", info[i].id, info[i].passwd, info[i].name, info[i].age);
+		//fputc('\n', fp);
 	}
 	fflush(fp);
 	fclose(fp);
@@ -313,19 +349,22 @@ void list(Member *info, int minfo)
 /*회원정보 수정 함수*/
 void modify(Member *info, int *minfo)
 {
-	char m_id[30]; //수정할 아이디 변수
-	int i;
+	char m_id[20]; //수정할 아이디 변수
+	//char m_age[20];
+	//char m_name[20];
+	//char m_passwd[20];
+	int i,j;
 	printf(" 수정하실 회원 아이디를 입력하시오:");
 	scanf("%s", m_id);
 	printf("***해당 하는 계정 유무가 확인하겠습니다.");
 	printf("\n");
 	printf("\n");
-	for(i=0; i<*minfo; i++)  
+	for(i=0; i<*minfo; i++)
 	{
 		if(strcmp(m_id,info[i].id)==0)
+			//if(search_cdata(info, m_id, info[*minfo].id, *minfo)==1)
+			//if(search_mdata(info, m_id, *minfo)==1)
 		{
-			//	while(1)
-			//	{
 			printf("====일치하는 계정을 찾았습니다.====\n");
 			printf("====회원 정보를 수정하십시오====. \n");
 			printf("수정하실 이름을 입력하십시오: ");
@@ -335,11 +374,10 @@ void modify(Member *info, int *minfo)
 			scanf("%s", info[i].age);
 			printf("수정하실 비밀번호를 입력하십시오: ");
 			scanf("%s", info[i].passwd);
-
+			//strcpy(info[*minfo].name, info[i].name);
+			//strcpy(info[*minfo].age, info[i].age);
+			//strcpy(info[*minfo].passwd, info[i].passwd);
 			break;
-			//	}
-
-
 		}
 		else
 		{
@@ -375,6 +413,10 @@ void withdraw(Member *info, int *minfo)
 			(*minfo)--;
 			printf(" 데이터가 삭제되었습니다. 메인으로 돌아갑니다. \n");
 		}
+		else
+		{
+			printf(" ==== 입력하신 계정 정보가 DB에 존재하지 않습니다. ==== \n");
+		}
 	}
 }
 
@@ -391,6 +433,7 @@ int search_mdata(Member *info, char *str, int minfo)
 			return 1;
 		}
 	}
+	return 0;
 }
 
 /*로그인 계정일치 서치함수*/
@@ -408,7 +451,32 @@ int search_login(Member *info, char *ID, char *Passwd, int minfo)
 			return 1;
 		}
 	}
+	return 0;
 }
+
+/*int search_cdata(Member *info, char *ID, char *id, int minfo)
+  {
+  char c1_id[20];
+  char c2_id[20];
+//char c_passwd[20];
+//char c_name[20];
+//char c_age[20];
+int i;
+strcpy(c1_id, ID);
+strcpy(c2_id, id);
+//strcpy(c_passwd, Passwd);
+//strcpy(c_name, Name);
+//strcpy(c_age, Age);
+for(i=0; i<minfo; i++)
+{
+if(strcmp(info[i].id, c1_id)==0 && strcmp(c1_id, c2_id)==0)
+//	if(strcmp(info[i].id, c_id)==0 && strcmp(info[i].passwd, c_passwd)==0 \
+&& strcmp(info[i].name, c_name)==0 && strcmp(info[i].age, c_age)==0)
+{
+return 1;
+}
+}
+}*/
 
 /*게시판 메인함수*/
 void board_main(char *str)
@@ -501,6 +569,7 @@ void board_write(Board *txt, int *binfo, char *write_id)
 	(*binfo)++;
 }
 
+/*게시판 글삭제 함수*/
 void board_delete(Board *txt, int *binfo, char *write_id)
 {
 	char del_title[60];
@@ -547,7 +616,7 @@ void board_delete(Board *txt, int *binfo, char *write_id)
 void board_modify(Board *txt, int *binfo, char *write_id)
 {
 	char modify_title[60];
-	int i;
+	int i,j;
 	getchar();
 	printf(" 수정하실 글 제목을 입력하시오: ");
 	fgets(modify_title, 60, stdin);
@@ -555,42 +624,122 @@ void board_modify(Board *txt, int *binfo, char *write_id)
 	printf("해당 하는 글 유무를 확인하겠습니다.");
 	printf("\n");
 
-	for(i=0; i<*binfo; i++)
-	{	//if(strcmp(modify_title, txt[i].title)==0)
+	int search_result =2; //
+	int search_binfo;
+	for(i=0; i< *binfo; i++)
+	{
+		/*	if(a==0){
+			continue;
+			}*/
 		if(strcmp(modify_title, txt[i].title)==0 && strcmp(write_id, txt[i].ID)==0)
 		{
-			printf("==== 제목과 일치하는 글을 찾았습니다. ====\n");
-			printf("제목을 수정하십시오. : ");
-			fgets(txt[i].title, 60, stdin);
-			txt[i].title[strlen(txt[i].title)-1]=0;
-			printf("내용을 수정하십시오. : ");
-			fgets(txt[i].content, 1000, stdin);
-			txt[i].content[strlen(txt[i].content)-1]=0;
+			search_result=0;
+			search_binfo=i;
 		}
 		else if(strcmp(modify_title, txt[i].title)==0 && strcmp(write_id, txt[i].ID)!=0)
 		{
-			printf("작성자와 현재 사용자가 다릅니다.\n");
-		}
-		else if(strcmp(modify_title, txt[i].title)!=0 && strcmp(write_id, txt[i].ID)==0)
-		{	
-			printf("입력하신 제목의 게시글이 존재하지 않습니다. \n");
-		}
-		else
-		{
-			printf("입력하신값이 모두 잘못되었습니다. \n");
+			search_result=1;
 		}
 	}
-}
 
+	if(search_result==0)
+	{
+		printf("수정하고자 하는 게시글이 존재합니다. \n");
+		printf("수정할 제목을 입력해주십시오. : ");
+		fgets(txt[search_binfo].title, 60, stdin);
+		txt[search_binfo].title[strlen(txt[search_binfo].title)-1] = 0;
+		printf("수정할 내용을 입력해주십시오. : ");
+		fgets(txt[search_binfo].content, 1000, stdin);
+		txt[search_binfo].content[strlen(txt[search_binfo].content)-1] = 0;
+	}
+	else if(search_result==1)
+	{
+		printf("작성자와 현재 사용자가 다릅니다.\n");
+	}
+	else if(search_result==2)
+	{
+		printf("입력하신 제목의 게시글이 존재하지 않습니다. \n");
+	}
+}
+/*
+   for(i=0; i<*binfo; i++)
+   {	//if(strcmp(modify_title, txt[i].title)==0)
+   if(strcmp(modify_title, txt[i].title)==0 && strcmp(write_id, txt[i].ID)==0)
+   {
+   printf("==== 제목과 일치하는 글을 찾았습니다. ====\n");
+   printf("제목을 수정하십시오. : ");
+   fgets(txt[i].title, 60, stdin);
+   txt[i].title[strlen(txt[i].title)-1]=0;
+   printf("내용을 수정하십시오. : ");
+   fgets(txt[i].content, 1000, stdin);
+   txt[i].content[strlen(txt[i].content)-1]=0;
+   }
+   else if(strcmp(modify_title, txt[i].title)==0 && strcmp(write_id, txt[i].ID)!=0)
+   {
+   printf("작성자와 현재 사용자가 다릅니다.\n");
+   }
+   else if(strcmp(modify_title, txt[i].title)!=0 && strcmp(write_id, txt[i].ID)==0)
+   {	
+   printf("입력하신 제목의 게시글이 존재하지 않습니다. \n");
+   }
+
+   else
+   {
+   printf("입력하신값이 모두 잘못되었습니다. \n");
+   }
+   }
+
+
+   }
+   */
 
 /*게시판 글목록 함수*/
 void board_list(Board *txt, int binfo)
 {
-	int i;
-	printf(" ====게시판 목록을 조회합니다.==== \n");
-	for(i=0; i<binfo; i++)
+	int i,n,j;
+	printf(" ==== 게시글 확인 창입니다. ==== \n");
+	printf("1. 게시글 전체보기 2. 최신 게시글 보기 \n");
+	printf("숫자만 입력하세요 : ");
+	scanf("%d", &j);
+	printf("\n");
+	if(j==1) //게시글 전체보기
 	{
-		printf("글번호 : %d, 사용자 : %s, 제목 : %s, 내용 : %s \n",i+1, txt[i].ID, txt[i].title, txt[i].content);
+		printf("==== 게시글 전체보기 창입니다. ====\n");
+		printf("총 게시글 수 : %d \n", binfo);
+		for(i=0; i<binfo; i++)
+		{
+			printf("글번호 :%d, 사용자, %s, 제목: %s, 내용 :%s \n" \
+					,i+1, txt[i].ID, txt[i].title, txt[i].content);
+		}
+	}
+	if(j==2) //최신글 보기
+	{
+		printf("==== 최신 게시글 보기창입니다.====\n");
+		printf("등록된 게시글 수 : %d개 \n", binfo);
+		printf("확인할 최신글 갯수를 숫자만 입력하세요. : ");
+		scanf("%d", &n);
+		if(n<binfo) //입력한 수가  게시글 개수보다 적어야 함
+		{
+			printf("확인한 글 갯수를 %d개 입력하셨습니다. \n", n);
+			printf("\n");
+		
+	
+			for(i=0; i<n; i++)
+			{
+				printf("글번호 :%d, 사용자, %s, 제목: %s, 내용 :%s \n" \
+						,binfo-i, txt[binfo-i-1].ID, txt[binfo-i-1].title, txt[binfo-i-1].content);
+			}
+		}
+		else //binfo 이하 숫자를 제외한 값
+		{
+			printf("잘못 된 입력값입니다. 최신 글 3개만 확인하겠습니다. \n");
+			printf("\n");
+			for(i=0; i<3; i++)
+			{
+				printf("글번호 :%d, 사용자, %s, 제목: %s, 내용 :%s \n" \
+						,binfo-i, txt[binfo-i-1].ID, txt[binfo-i-1].title, txt[binfo-i-1].content);
+			}
+		}
 	}
 }
 
@@ -604,8 +753,8 @@ void board_mylist(Board *txt, int *binfo, char *write_id)
 	{
 		if(strcmp(txt[i].ID, write_id)==0)
 		{
-				printf("글번호 : %d, 사용자 :%s, 제목 : %s, 내용 : %s \n" \
-						, i, txt[i].ID,txt[i].title, txt[i].content);
+			printf("글번호 : %d, 사용자 :%s, 제목 : %s, 내용 : %s \n" \
+					, i+1, txt[i].ID,txt[i].title, txt[i].content);
 		}
 	}
 }
@@ -624,10 +773,10 @@ void include_id(Board *txt,  int *binfo)
 	fputs(search_id, stdout);
 	fputs("님이 쓴 게시글 목록입니다. ====\n", stdout);
 	/*
-	printf("사용자 계정을 입력해주십시오. ");
-	scanf("%s", search_id);
-	printf(" ==== %s님이 쓴 게시글 목록입니다. ==== \n", search_id);
-	*/
+	   printf("사용자 계정을 입력해주십시오. ");
+	   scanf("%s", search_id);
+	   printf(" ==== %s님이 쓴 게시글 목록입니다. ==== \n", search_id);
+	   */
 	for(i=0; i<(*binfo); i++)
 	{
 		if(strcmp(txt[i].ID, search_id)==0)
@@ -643,27 +792,26 @@ void include_word(Board *txt, int *binfo)
 	char search_word[100];
 	int i;
 	/*
-	printf("특정 단어가 포함된 글을 찾겠습니다. \n");
-	gethchar();
-	printf("단어를 입력해주십시오. \n");
-	fgets(search_word, 100, stdin);
-	search_word[strlen(search_word)-1]=0;
-	printf("특정 단어가 포함된 글을 찾겠습니다.");
-	printf("\n");
-	*/
+	   printf("특정 단어가 포함된 글을 찾겠습니다. \n");
+	   gethchar();
+	   printf("단어를 입력해주십시오. \n");
+	   fgets(search_word, 100, stdin);
+	   search_word[strlen(search_word)-1]=0;
+	   printf("특정 단어가 포함된 글을 찾겠습니다.");
+	   printf("\n");
+	   */
 	printf(" 특정단어가 포함된 글을 찾겠습니다. \n");
 	printf(" 단어를 입력해 주십시오. :");
 	scanf("%s", search_word);
-	
+
 	for(i=0; i<(*binfo); i++)
 	{
-		if(strstr(txt[i].content, search_word)==0)
+		if(strstr(txt[i].content, search_word))
 		{
 			printf("글 번호 : %d, 사용자 %s, 제목 : %s, 내용 : %s \n", \
-					i, txt[i].ID,txt[i].title, txt[i].content);
+					i, txt[i].ID, txt[i].title, txt[i].content);
 		}
 	}
-
 
 }
 
@@ -680,34 +828,59 @@ void save_bdata(Board *txt, int binfo)
 
 	for(i=0; i<binfo; i++)
 	{
-		fprintf(fp, "%s %s %s \n" ,txt[i].ID, txt[i].title, txt[i].content);
+		fprintf(fp, "%s$%s$%s\n", txt[i].ID, txt[i].title, txt[i].content);
 	}
-	fflush(fp);
+	//	fflush(fp);
 	fclose(fp);
 }
 
 /*게시판 글 로드 함수*/
 void load_bdata(Board *txt, int *binfo)
 {
-	int ret;  //fscanf에 필요한 변수
+
+	int ret;
+	char size[10000];
+	//int ret;  //fscanf에 필요한 변수
 	FILE *fps;
 	fps=fopen("board_info.txt", "rt");
 	if(fps==NULL)
 	{
 		printf(" 파일 로드를 실패했습니다.");
 	}
-	while(1)
-	{
-		ret=fscanf(fps,"%s %s %s \n", txt[*binfo].ID, txt[*binfo].title, txt[*binfo].content);
 
-		if(ret==EOF)
-		{
-			break;
-		}
+
+	while (fgets(size, sizeof(size), fps) != NULL)
+	{
+		char *ptr = strtok(size, "$");
+
+		strcpy(txt[*binfo].ID, ptr);
+		ptr = strtok(NULL, "$");
+		strcpy(txt[*binfo].title, ptr);
+		ptr = strtok(NULL, "$");
+		ptr[strlen(ptr)-1] =0;
+		strcpy(txt[*binfo].content, ptr);
+		//ptr = strtok(NULL, "|");
+
 		(*binfo)++;
 	}
+
 	fclose(fps);
 }
+/*
+   while(1)
+   {
+   ret=fscanf(fps,"%s %s %s \n" \
+   , txt[*binfo].ID, txt[*binfo].title, txt[*binfo].content);
+
+   if(ret==EOF)
+   {
+   break;
+   }
+   (*binfo)++;
+   }
+   fclose(fps);
+   }*/
+
 /* 아직 접근안했음 나중에 할 것 우선 글 삭제와 수정부터 해결후 진행할 
    void board_check()
    {
