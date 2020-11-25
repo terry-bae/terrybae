@@ -1,0 +1,8 @@
+[1] 16:46:13 [SUCCESS] root@192.168.12.212
+              total        used        free      shared  buff/cache   available
+Mem:           991M        559M        167M         13M        264M        280M
+Swap:          2.0G         33M        2.0G
+[2] 16:46:13 [SUCCESS] root@192.168.12.243
+              total        used        free      shared  buff/cache   available
+Mem:           991M        457M        236M         26M        296M        364M
+Swap:          2.0G        202M        1.8G

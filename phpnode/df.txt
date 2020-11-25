@@ -1,0 +1,24 @@
+[1] 16:46:12 [SUCCESS] root@192.168.12.212
+Filesystem               Size  Used Avail Use% Mounted on
+devtmpfs                 480M     0  480M   0% /dev
+tmpfs                    496M     0  496M   0% /dev/shm
+tmpfs                    496M  7.8M  488M   2% /run
+tmpfs                    496M     0  496M   0% /sys/fs/cgroup
+/dev/mapper/centos-root   13G  6.2G  5.4G  54% /
+/dev/vda1                477M  181M  267M  41% /boot
+/dev/mapper/centos-home  4.8G  105M  4.5G   3% /home
+tmpfs                    100M  8.0K  100M   1% /run/user/42
+tmpfs                    100M   28K  100M   1% /run/user/1000
+tmpfs                    100M     0  100M   0% /run/user/0
+[2] 16:46:12 [SUCCESS] root@192.168.12.243
+Filesystem               Size  Used Avail Use% Mounted on
+devtmpfs                 480M     0  480M   0% /dev
+tmpfs                    496M     0  496M   0% /dev/shm
+tmpfs                    496M   21M  476M   5% /run
+tmpfs                    496M     0  496M   0% /sys/fs/cgroup
+/dev/mapper/centos-root   13G  6.2G  5.4G  54% /
+/dev/vda1                477M  181M  267M  41% /boot
+/dev/mapper/centos-home  4.8G  105M  4.5G   3% /home
+tmpfs                    100M  8.0K  100M   1% /run/user/42
+tmpfs                    100M   56K  100M   1% /run/user/1000
+tmpfs                    100M     0  100M   0% /run/user/0
