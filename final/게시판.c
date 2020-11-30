@@ -292,7 +292,9 @@ void load_mdata(Member *info, int *minfo)
 	fps=fopen("member_info.txt", "rt");  //db역할 member_info.txt 불러오기
 	if(fps==NULL)
 	{
-		printf("파일 로드를  실패했습니다");	
+		printf("로드할 회원정보 파일이 없습니다. \n");
+		printf("로드 파일없이 프로그램 진행하겠습니다. \n");	
+		return ;
 	}
 
 	while (fgets(Size, sizeof(Size), fps) != NULL)
@@ -534,7 +536,7 @@ void withdraw(Member *info, int *minfo, char *write_id)
 				strcpy(info[j-1].id, info[j].id);
 				strcpy(info[j-1].passwd, info[j].passwd);
 				strcpy(info[j-1].name, info[j].name);
-				strcpy(info[j-1].age, info[j].age);
+		strcpy(info[j-1].age, info[j].age);
 			}
 			(*minfo)--;
 			printf(" 데이터가 삭제되었습니다. 메인으로 돌아갑니다. \n");
@@ -570,7 +572,7 @@ int search_login(Member *info, char *ID, char *Passwd, int minfo)
 	char login_id[20];
 	char login_passwd[20];
 	int i;
-수	strcpy(login_id,ID);
+	strcpy(login_id,ID);
 	strcpy(login_passwd,Passwd);
 	for(i=0; i<minfo; i++)
 	{
@@ -933,7 +935,9 @@ void load_bdata(Board *txt, int *binfo)
 	fps=fopen("board_info.txt", "rt");
 	if(fps==NULL)
 	{
-		printf(" 파일 로드를 실패했습니다.");
+		printf("게시글 정보 로드할 파일이 없습니다. \n");
+		printf("프로그램 시작하겠습니다. \n");
+		return ;
 	}
 
 
